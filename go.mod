@@ -5,7 +5,7 @@ go 1.19
 require (
 	firebase.google.com/go/v4 v4.10.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
-	github.com/horcu/peez_me_models v0.0.0-20221216171441-26f460d9c2d8
+	github.com/horcu/peez_me_models v0.0.21
 )
 
 require (

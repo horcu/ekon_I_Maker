@@ -105,11 +105,14 @@ func invitationHandler(w http.ResponseWriter, r *http.Request) {
 	//	http.Error(w, msg, http.StatusInternalServerError)
 	//}
 
-	var tick *models.Ticket
+	var tick models.Ticket
 	if err := json.NewDecoder(r.Body).Decode(&tick); err != nil {
 		fmt.Println("error: " + err.Error())
 		returnAccepted(w)
 	}
+
+	// set the status to new
+	tick.Status = models.New
 
 	fmt.Fprintln(w, "ticket parsed")
 
@@ -133,7 +136,7 @@ func invitationHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//save the ticket record
-	ref, err := ticketsRef.Child(tick.CreatedBy).Push(context.Background(), nil)
+	ref, err := ticketsRef.Child(tick.CreatedBy.ID).Push(context.Background(), nil)
 	if err != nil {
 		fmt.Println("error: " + err.Error())
 		returnAccepted(w)
@@ -142,13 +145,12 @@ func invitationHandler(w http.ResponseWriter, r *http.Request) {
 	k := ref.Key
 	tick.Id = k
 
-	if ticketsRef.Child(tick.CreatedBy).Child(tick.Id).Set(context.Background(), &tick); err != nil {
+	if ticketsRef.Child(tick.CreatedBy.ID).Child(tick.Id).Set(context.Background(), &tick); err != nil {
 		fmt.Println("error: " + err.Error())
 		returnAccepted(w)
 	}
 
-	fmt.Println("tickets saved!")
-
+	fmt.Fprintln(w, "tickets saved")
 	// create an invitation record for each user
 	for _, inv := range tick.Invitees {
 		err = invitesRef.Child(inv.ID).Child(tick.Id).Set(context.Background(), &tick)
@@ -158,7 +160,7 @@ func invitationHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = fmt.Println("invitation saved!")
+	_, err = fmt.Fprintln(w, "invitations saved")
 }
 
 func returnAccepted(w http.ResponseWriter) {
